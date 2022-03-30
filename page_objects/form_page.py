@@ -1,44 +1,63 @@
 import os
 import sys
 import time
-import unittest
 import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from parameterized import parameterized, parameterized_class
 
 
-class FormPage() :
+
+class FormPage:
+
     NAME_INPUT = '//*[@id="uspForm"]/div[1]/div[1]/div/input'
     EMAIL_INPUT =  '//*[@id="email"]'
     COMPANY_INPUT =  '//*[@id="company"]/div/input'
     PHONE_INPUT =  '//*[@id="phoneNumber"]'
     SITE_INPUT =  '//*[@id="uspForm"]/div[1]/div[4]/div/input'
     GET_EBOOK_BUTTON = '//*[@id="uspForm"]/div[2]/div/button'
+    HERE_BUTTON = '//a[contains(text(),"HERE")]'
 
-    TEST_NAME = "Maciej Duda"
-    TEST_EMAIL = "maciej.duda+testrekrutacja@salesmanago.com"
-    TEST_COMPANY = "salesmanago"
-    TEST_PHONE = "555555555"
-    TEST_SITE = "www.salesmanago.pl"
+    def __init__(self, driver):
+        self.driver = driver
 
-    def fill_form(self, ebook):
-        self.driver.find_element (By.XPATH, FormPage.NAME_INPUT).send_keys (FormPage.TEST_NAME)
-        self.driver.find_element (By.XPATH, FormPage.EMAIL_INPUT).send_keys (FormPage.TEST_EMAIL)
-        self.driver.find_element (By.XPATH, FormPage.COMPANY_INPUT).send_keys (FormPage.TEST_COMPANY)
-        self.driver.find_element (By.XPATH, FormPage.PHONE_INPUT).send_keys (FormPage.TEST_PHONE)
-        self.driver.find_element (By.XPATH, FormPage.SITE_INPUT).send_keys (FormPage.TEST_SITE)
-        self.driver.find_element (By.XPATH, FormPage.GET_EBOOK_BUTTON).click ()
+    def type_name(self, name: str) -> None:
+        self.driver.find_element(By.XPATH, self.NAME_INPUT).send_keys(name)
+
+    def type_email(self, email: str) -> None:
+        self.driver.find_element(By.XPATH, self.EMAIL_INPUT).send_keys(email)
+
+    def type_company(self, company: str) -> None:
+        self.driver.find_element(By.XPATH, self.COMPANY_INPUT).send_keys(company)
+
+    def type_phone(self, phone: str) -> None:
+        self.driver.find_element(By.XPATH, self.PHONE_INPUT).send_keys(phone)
+
+    def type_site(self, website: str) -> None:
+        self.driver.find_element(By.XPATH, self.SITE_INPUT).send_keys(website)
+    
+    def download_file(self, ebook) -> None:
+        ebook_btn = self.driver.find_element (By.XPATH, self.HERE_BUTTON)
         time.sleep (5)
-        ebook_btn = self.driver.find_element (By.XPATH, '//a[contains(text(),"HERE")]')
         ebook_link = ebook_btn .get_attribute ("href")
+        print(ebook_link)
         r = requests.get (ebook_link, allow_redirects=True)
 
-        open (os.path.join (os.path.dirname (__file__), "download", ebook + ".pdf"), 'wb').write (r.content)
-
-        is_file = os.path.isfile (os.path.join (os.path.dirname (__file__), "download", ebook + ".pdf"))
-
-        assert is_file
-
+        open(os.path.join (os.path.dirname(os.path.dirname (__file__)), "download", ebook + ".pdf"), 'wb').write(r.content)
         # self.driver.find_element (By.XPATH, '//a[contains(text(),"HERE")]').click ()
-        time.sleep (10)
+        #time.sleep (10)
+
+    def is_file_download(self, ebook) -> None:
+        is_file = os.path.isfile(os.path.join (os.path.dirname(os.path.dirname (__file__)), "download", ebook + ".pdf"))
+        return is_file
+
+
+    def fill_form(self, name: str, email: str, company: str, phone: str, website: str):
+        self.type_name(name)
+        self.type_email(email)
+        self.type_company(company)
+        self.type_phone(phone)
+        self.type_site(website)
+        self.driver.find_element (By.XPATH, self.GET_EBOOK_BUTTON).click()
+       
+      
+        

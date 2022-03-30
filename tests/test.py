@@ -5,21 +5,29 @@ import unittest
 import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from parameterized import parameterized, parameterized_class
 from page_objects.form_page import FormPage
-@parameterized_class([
-    {"ebook": "Zero-Party Data Revolution Essentials"},
-   {"ebook": "Online Consumer Trends 2020"},
-   {"ebook": "The Ultimate Guide to Headless Commerce"},
-])
+from parameterized import parameterized, parameterized_class
 
-class SearchEbook(unittest.TestCase):
-    EBOOK = "Online Consumer Trends 2020"
+CHROME_EXECUTABLE_PATH ="/usr/lib/chromium-browser/chromedriver"
+
+DATA_SET = [("Online Consumer Trends 2020",), ("The Ultimate Guide to Headless Commerce",),("Zero Party Data revolution in Ecommerce",),]
+
+
+class TestSearchEbook(unittest.TestCase):
+    
+    TEST_NAME = "Maciej Duda"
+    TEST_EMAIL = "maciej.duda+testrekrutacja@salesmanago.com"
+    TEST_COMPANY = "salesmanago"
+    TEST_PHONE = "555555555"
+    TEST_SITE = "www.salesmanago.pl"
+
+    #EBOOK = "Online Consumer Trends 2020"
     def setUp(self):
-        print ('searching for:', self.ebook)
-        self.driver = webdriver.Chrome()
-        self.driver.maximize_window ()
+        
+        self.driver = webdriver.Chrome(CHROME_EXECUTABLE_PATH)
+        self.driver.maximize_window()
         self.driver.get("https://www.salesmanago.com/")
+        self.form_page = FormPage(self.driver)
         cookies_accept = self.driver.find_element(By.ID, 'close-cookies')
         if cookies_accept:
             cookies_accept.click()
@@ -34,30 +42,35 @@ class SearchEbook(unittest.TestCase):
         self.driver.find_element(By.XPATH, '/html/body/div/div[1]/span/div/button').click()
         self.driver.switch_to.default_content()
 
-    def test_download_ebook(self):
-        all_ebooks= self.driver.find_elements(By.CLASS_NAME, 'ebook__img--container')
+    def tearDown(self):
+        self.driver.quit()
 
+    @parameterized.expand(DATA_SET)
+    def test_download_ebook(self, ebook_name):
+        all_ebooks= self.driver.find_elements(By.CLASS_NAME, 'ebook__img--container')
+        # print(ebook_name, "EBOOK NAME")
 
         for ebook in all_ebooks:
             time.sleep(3)
             ebook.click()
             self.driver.switch_to.window(self.driver.window_handles[-1])
             title = self.driver.find_element(By.CLASS_NAME, 'ebook__title')
-            if title.text.strip().replace("\n", " ") == self.ebook:
+            # print(title.text.strip().replace("\n", " "))
+            if title.text.strip().replace("\n", " ") == ebook_name:
                 print("Ebook found")
-                FormPage.fill_form(self,self.ebook)
-                self.driver.close()
+                self.form_page.fill_form(self.TEST_NAME,self.TEST_EMAIL,self.TEST_COMPANY,self.TEST_PHONE,self.TEST_SITE)
+                self.form_page.download_file(ebook_name)
                 break
 
             else:
                 self.driver.close()
                 self.driver.switch_to.window(self.driver.window_handles[0])
+        
+        assert self.form_page.is_file_download(ebook_name) is True
 
-    def tearDown(self):
-
-        self.driver.quit()
+        
+        
 
 if __name__ == '__main__':
-    if len (sys.argv) > 1:
-        SearchEbook.EBOOK = sys.argv.pop()
+   
     unittest.main()
