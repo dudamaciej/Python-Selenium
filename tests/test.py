@@ -1,14 +1,12 @@
 import os
-import sys
 import time
 import unittest
-import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from page_objects.form_page import FormPage
-from parameterized import parameterized, parameterized_class
+from parameterized import parameterized
 
-CHROME_EXECUTABLE_PATH ="/usr/lib/chromium-browser/chromedriver"
+CHROME_EXECUTABLE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "chromedriver")
 
 DATA_SET = [("Online Consumer Trends 2020",), ("The Ultimate Guide to Headless Commerce",),("Zero Party Data revolution in Ecommerce",),]
 
@@ -21,7 +19,6 @@ class TestSearchEbook(unittest.TestCase):
     TEST_PHONE = "555555555"
     TEST_SITE = "www.salesmanago.pl"
 
-    #EBOOK = "Online Consumer Trends 2020"
     def setUp(self):
         
         self.driver = webdriver.Chrome(CHROME_EXECUTABLE_PATH)
@@ -48,14 +45,13 @@ class TestSearchEbook(unittest.TestCase):
     @parameterized.expand(DATA_SET)
     def test_download_ebook(self, ebook_name):
         all_ebooks= self.driver.find_elements(By.CLASS_NAME, 'ebook__img--container')
-        # print(ebook_name, "EBOOK NAME")
+        
 
         for ebook in all_ebooks:
-            time.sleep(3)
+            time.sleep(1)
             ebook.click()
             self.driver.switch_to.window(self.driver.window_handles[-1])
             title = self.driver.find_element(By.CLASS_NAME, 'ebook__title')
-            # print(title.text.strip().replace("\n", " "))
             if title.text.strip().replace("\n", " ") == ebook_name:
                 print("Ebook found")
                 self.form_page.fill_form(self.TEST_NAME,self.TEST_EMAIL,self.TEST_COMPANY,self.TEST_PHONE,self.TEST_SITE)
@@ -67,9 +63,6 @@ class TestSearchEbook(unittest.TestCase):
                 self.driver.switch_to.window(self.driver.window_handles[0])
         
         assert self.form_page.is_file_download(ebook_name) is True
-
-        
-        
 
 if __name__ == '__main__':
    

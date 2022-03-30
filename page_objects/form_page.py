@@ -1,10 +1,7 @@
 import os
-import sys
 import time
 import requests
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-
 
 
 class FormPage:
@@ -34,22 +31,18 @@ class FormPage:
 
     def type_site(self, website: str) -> None:
         self.driver.find_element(By.XPATH, self.SITE_INPUT).send_keys(website)
-    
+
     def download_file(self, ebook) -> None:
         ebook_btn = self.driver.find_element (By.XPATH, self.HERE_BUTTON)
         time.sleep (5)
         ebook_link = ebook_btn .get_attribute ("href")
-        print(ebook_link)
         r = requests.get (ebook_link, allow_redirects=True)
 
         open(os.path.join (os.path.dirname(os.path.dirname (__file__)), "download", ebook + ".pdf"), 'wb').write(r.content)
-        # self.driver.find_element (By.XPATH, '//a[contains(text(),"HERE")]').click ()
-        #time.sleep (10)
 
     def is_file_download(self, ebook) -> None:
         is_file = os.path.isfile(os.path.join (os.path.dirname(os.path.dirname (__file__)), "download", ebook + ".pdf"))
         return is_file
-
 
     def fill_form(self, name: str, email: str, company: str, phone: str, website: str):
         self.type_name(name)
@@ -58,6 +51,3 @@ class FormPage:
         self.type_phone(phone)
         self.type_site(website)
         self.driver.find_element (By.XPATH, self.GET_EBOOK_BUTTON).click()
-       
-      
-        
